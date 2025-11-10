@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Microtweet Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div>
+        <h1>Microtweet Dashboard</h1>
+        <p class="subtitle">Interactúa con los microservicios desde una interfaz sencilla</p>
+      </div>
+      <form id="api-base-form" class="api-base">
+        <label for="api-base-input">API Gateway</label>
+        <input type="url" id="api-base-input" name="apiBase" placeholder="http://localhost:3000" required />
+        <button type="submit">Guardar</button>
+      </form>
+    </header>
+
+    <main>
+      <section id="status-bar" aria-live="polite"></section>
+
+      <section class="card" id="auth-card">
+        <div class="tabs-header">
+          <div class="tab-buttons auth-tabs">
+            <button type="button" class="tab-button active" data-tab="register">
+              <span class="tab-icon">👤</span>
+              Registro
+            </button>
+            <button type="button" class="tab-button" data-tab="login">
+              <span class="tab-icon">🔑</span>
+              Login
+            </button>
+            <button type="button" class="tab-button" data-tab="session" disabled>
+              <span class="tab-icon">✅</span>
+              Sesión
+            </button>
+          </div>
+        </div>
+
+        <div class="tab-panel active" data-panel="register">
+          <form id="register-form" class="stacked-form">
+            <label>
+              Nombre de usuario
+              <input type="text" name="username" required />
+            </label>
+            <label>
+              Email
+              <input type="email" name="email" required />
+            </label>
+            <label>
+              Contraseña
+              <input type="password" name="password" minlength="6" required />
+            </label>
+            <label>
+              Bio
+              <textarea name="bio" rows="2" placeholder="Cuéntanos algo de ti"></textarea>
+            </label>
+            <button type="submit">Crear cuenta</button>
+          </form>
+        </div>
+
+        <div class="tab-panel" data-panel="login">
+          <form id="login-form" class="stacked-form">
+            <label>
+              Email
+              <input type="email" name="email" required />
+            </label>
+            <label>
+              Contraseña
+              <input type="password" name="password" required />
+            </label>
+            <button type="submit">Entrar</button>
+          </form>
+        </div>
+
+        <div class="tab-panel" data-panel="session">
+          <article class="profile-info">
+            <h2>Sesión</h2>
+            <p id="profile-summary">Inicia sesión para ver tu información.</p>
+            <div class="profile-actions">
+              <button id="logout-button" type="button" class="secondary">Cerrar sesión</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="card" id="feed-card">
+        <div class="tabs-header">
+          <div class="tab-buttons">
+            <button type="button" class="tab-button active" data-tab="public">Feed público</button>
+            <button type="button" class="tab-button" data-tab="personal" disabled>Mi feed</button>
+          </div>
+          <button id="refresh-tab" type="button" class="secondary">Actualizar</button>
+        </div>
+
+        <div class="tab-panel active" data-panel="public">
+          <div class="feed-panel-header">
+            <p class="feed-panel-note">Explora las publicaciones recientes.</p>
+            <button
+              type="button"
+              class="add-status-button hidden"
+              data-role="compose-button"
+              data-context="public"
+            >
+              Añadir estado
+            </button>
+          </div>
+          <ul id="public-feed" class="feed-list" aria-live="polite"></ul>
+        </div>
+
+        <div class="tab-panel" data-panel="personal">
+          <div class="feed-panel-header">
+            <p id="personal-panel-message" class="feed-panel-note">
+              Inicia sesión para ver tu feed personal.
+            </p>
+            <button
+              type="button"
+              class="add-status-button hidden"
+              data-role="compose-button"
+              data-context="personal"
+            >
+              Añadir estado
+            </button>
+          </div>
+          <ul id="personal-feed" class="feed-list hidden" aria-live="polite"></ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Microtweet &mdash; Frontend básico para pruebas locales</p>
+    </footer>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
+

@@ -1,0 +1,165 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: microtweet-postgres
+    environment:
+      POSTGRES_USER: microtweet
+      POSTGRES_PASSWORD: microtweet123
+      POSTGRES_DB: microtweet_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microtweet-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U microtweet -d microtweet_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: microtweet-redis
+    ports:
+      - "6380:6379"
+    networks:
+      - microtweet-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Auth Service
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    environment:
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: microtweet_db
+      DB_USER: microtweet
+      DB_PASSWORD: microtweet123
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      JWT_EXPIRES_IN: 7d
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - microtweet-network
+    restart: unless-stopped
+
+  # User Service
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    environment:
+      PORT: 3002
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: microtweet_db
+      DB_USER: microtweet
+      DB_PASSWORD: microtweet123
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - microtweet-network
+    restart: unless-stopped
+
+  # Tweet Service
+  tweet-service:
+    build: ./tweet-service
+    container_name: tweet-service
+    environment:
+      PORT: 3003
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: microtweet_db
+      DB_USER: microtweet
+      DB_PASSWORD: microtweet123
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "3003:3003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - microtweet-network
+    restart: unless-stopped
+
+  # Feed Service
+  feed-service:
+    build: ./feed-service
+    container_name: feed-service
+    environment:
+      PORT: 3004
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: microtweet_db
+      DB_USER: microtweet
+      DB_PASSWORD: microtweet123
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      TWEET_SERVICE_URL: http://tweet-service:3003
+      USER_SERVICE_URL: http://user-service:3002
+    ports:
+      - "3004:3004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      tweet-service:
+        condition: service_started
+      user-service:
+        condition: service_started
+    networks:
+      - microtweet-network
+    restart: unless-stopped
+
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    environment:
+      PORT: 3000
+      AUTH_SERVICE_URL: http://auth-service:3001
+      USER_SERVICE_URL: http://user-service:3002
+      TWEET_SERVICE_URL: http://tweet-service:3003
+      FEED_SERVICE_URL: http://feed-service:3004
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - user-service
+      - tweet-service
+      - feed-service
+    networks:
+      - microtweet-network
+    restart: unless-stopped
+
+networks:
+  microtweet-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Añadir estado | Microtweet</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div>
+        <h1>Añadir estado</h1>
+        <p class="subtitle">Comparte un nuevo microtweet</p>
+      </div>
+      <button id="back-button" type="button" class="secondary">← Volver</button>
+    </header>
+
+    <main>
+      <section id="status-bar" aria-live="polite"></section>
+
+      <section class="card">
+        <h2>Nuevo estado</h2>
+        <form id="compose-form">
+          <label for="compose-content">
+            Contenido
+            <textarea
+              id="compose-content"
+              name="content"
+              rows="4"
+              maxlength="280"
+              placeholder="¿Qué está pasando?"
+              required
+            ></textarea>
+          </label>
+          <div class="form-actions">
+            <button type="submit">Publicar</button>
+            <button type="button" id="cancel-button" class="secondary">Cancelar</button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Microtweet &mdash; Comparte lo que piensas</p>
+    </footer>
+
+    <script src="compose.js" defer></script>
+  </body>
+</html>
+
